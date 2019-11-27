@@ -1,0 +1,7 @@
+
+openssl ca -config intermediate/openssl.cnf \
+      -extensions server_cert -days 375 -notext -md sha256 \
+      -in intermediate/csr/vault_server.csr.pem \
+      -out intermediate/certs/vault_server.cert.pem2ca424e5-dd74-8761-887f-94abcaec505a
+
+      2ca424e5-dd74-8761-887f-94abcaec505a
