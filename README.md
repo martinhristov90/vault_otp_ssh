@@ -10,7 +10,8 @@
 
 ### How to use it ?
 
-- `git clone https://github.com/martinhristov90/NAME_HETRE.git`
+- `git clone https://github.com/martinhristov90/vault_otp_ssh.git`
+- Execute `cd vault_otp_ssh`
 - Execute `vagrant up`
 - You now have two VMs running "vault_server" (192.168.1.10) and "ubuntu_ssh" (192.168.1.20).
 - Review provision scripts in `./configs/scripts` folder
@@ -38,11 +39,11 @@ Get the user token and execute the following API call to get OTP :
        --data '{"ip": "192.168.1.20"}'
        https://127.0.0.1:8200/v1/ssh/creds/otp_key_role
 ```
-Note: If you are using Postman, grab the user token from the previous API call and place it in Authentication tab, from drop-down menu select `Bearer Token`.
+> Note: If you are using Postman, grab the user token from the previous API call and place it in Authentication tab, from drop-down menu select `Bearer Token`.
 
 You should get similar response back :
 
-```
+```json
 {
     "request_id": "22e05e06-f8bd-7410-60e0-18d1b43a9182",
     "lease_id": "ssh-client/creds/otp_key_role/VBvIP2lLENBmJyq9AHZECQle",
@@ -69,7 +70,7 @@ If you opt-in for using TLS in Vault you should know the following :
 
 - To enable TLS on the Vault server your `/etc/vauld.d/vault.hcl` should look like this :
 
-```
+```hcl
 backend "file" {
 path = "/vaultDataDir"
 }
@@ -87,7 +88,7 @@ ui = true
 - On the `ubuntu_ssh` machine your Vault SSH help config file (`/etc/vault-ssh-helper.d/config.hcl`)
     - Create file named /etc/vault-ssh-helper.d/vault.crt and place the contents of `ca-chain.cert.pem` in it.
 
-```
+```hcl
 vault_addr = "https://192.168.1.10:8200"
 ssh_mount_point = "ssh-client"
 ca_cert = "/etc/vault-ssh-helper.d/vault.crt"
