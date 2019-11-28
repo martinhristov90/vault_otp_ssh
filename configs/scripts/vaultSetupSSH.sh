@@ -1,15 +1,50 @@
 #!/usr/bin/env bash
 
 # Setting Vault Address, it is running on localhost at port 8200
-export VAULT_ADDR=http://127.0.0.1:8200
+export VAULT_ADDR=https://127.0.0.1:8200
+# Vault client should trust the CA
+export VAULT_CACERT=/vagrant/keys_COMPROMISED/ca-chain.cert.pem
 
 # Setting the Vault Address in Vagrant user bash profile
 grep "VAULT_ADDR" ~/.bash_profile  > /dev/null 2>&1 || {
-echo "export VAULT_ADDR=http://127.0.0.1:8200" >> ~/.bash_profile
+echo "export VAULT_ADDR=https://127.0.0.1:8200" >> ~/.bash_profile
 }
 
+# Setting up trusted CA
+grep "VAULT_CACERT" ~/.bash_profile  > /dev/null 2>&1 || {
+echo "export VAULT_CACERT=/vagrant/keys_COMPROMISED/ca-chain.cert.pem" >> ~/.bash_profile
+}
+
+# Stopping Vault
+echo "Stopping Vault..."
+sudo systemctl stop vault
+
+# Overriding the Vault config file of the default box
+sudo tee /etc/vault.d/vault.hcl > /dev/null << EOL
+backend "file" {
+path = "/vaultDataDir"
+}
+listener "tcp" {
+address = "0.0.0.0:8200"
+tls_disable = 0
+tls_cert_file = "/vagrant/keys_COMPROMISED/vault_server.crt.pem"
+tls_key_file = "/vagrant/keys_COMPROMISED/private/vault_server.key.pem"
+}
+
+# Enable UI
+ui = true
+EOL
+
+# Starting Vault
+echo "Starting Vault..."
+sudo systemctl start vault
+
+# Wait for Vault to start
+echo "Waiting for Vault to start"
+sleep 1
+
 echo "Check if Vault is already initialized..."
-if [ `vault status -address=${VAULT_ADDR}| awk 'NR==4 {print $2}'` == "true" ]
+if [ `vault status | awk 'NR==4 {print $2}'` == "true" ]
 then
     echo "Vault already initialized...Exiting..."
     exit 1
@@ -18,8 +53,6 @@ fi
 # Making working dir for Vault setup
 mkdir -p /home/vagrant/_vaultSetup
 touch /home/vagrant/_vaultSetup/keys.txt
-
-echo "Setting up PKI admin user..."
 
 echo "Initializing Vault..."
 vault operator init -address=${VAULT_ADDR} > /home/vagrant/_vaultSetup/keys.txt

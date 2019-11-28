@@ -68,33 +68,7 @@ If you opt-in for using TLS in Vault you should know the following :
 
 - The certificates inside the `./keys_COMPROMISED` (private keys have no password) folder should be considered COMPROMISED. You should generate your own, my recommendation is to use one Root CA and one Intermediate CA to sign the end certificates, there is a great article how to do that with OpenSSL [here](https://jamielinux.com/docs/openssl-certificate-authority/introduction.html). Also, when generating certificates keep in mind that SANs should be included while signing it. About SANs [here](http://apetec.com/support/generatesan-csr.htm)
 
-- To enable TLS on the Vault server your `/etc/vauld.d/vault.hcl` should look like this :
-
-```hcl
-backend "file" {
-path = "/vaultDataDir"
-}
-listener "tcp" {
-address = "0.0.0.0:8200"
-tls_disable = 0
-tls_cert_file = "/vagrant/keys_COMPROMISED/vault_server.crt.pem"
-tls_key_file = "/vagrant/keys_COMPROMISED/private/vault_server.key.pem"
-}
-
-# Enable UI
-ui = true
-```
-
-- On the `ubuntu_ssh` machine your Vault SSH help config file (`/etc/vault-ssh-helper.d/config.hcl`)
-    - Create file named /etc/vault-ssh-helper.d/vault.crt and place the contents of `ca-chain.cert.pem` in it.
-
-```hcl
-vault_addr = "https://192.168.1.10:8200"
-ssh_mount_point = "ssh-client"
-ca_cert = "/etc/vault-ssh-helper.d/vault.crt"
-tls_skip_verify = false
-allowed_roles = "*"
-```
+- TLS is enabled after `vagrant up` executed.
 
 - If you put password on the private key used by Vault, for example using (openssl rsa -aes256 -in [file1.key] -out [file2.key]), this password should be entered every time the Vault server is started.
 
