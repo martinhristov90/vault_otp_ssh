@@ -81,16 +81,15 @@ echo "Enable ssh secret backend at ssh-client/ path"
 vault secrets enable -path=ssh-client ssh
 
 # Define a role 
-vault write ssh-client/roles/otp_key_role key_type=otp \
-        default_user=ubuntu \
-        cidr_list=0.0.0.0/0
+# The role defines only one IP.
+vault write ssh-client/roles/otp_key_role @/vagrant/configs/ssh_roles/otp_role.hcl
 
 # Creating policy for user that has only access for generating OTP
 vault policy write ssh-regular-user-policy /vagrant/configs/vault_roles/regular-user-role-policy.hcl
 
 # Enabling userpass for ssh clients
 echo "Enabling userpass for ssh clients"
-vault auth enable -path=ssh_userpass userpass > /dev/null 2>&1
+vault auth enable -path=ssh_userpass -description="userpass backend for ssh OTP users" userpass > /dev/null 2>&1
 
 # Creating regular and root users in userpass dedicated to ssh clients
 # INSECURE PASSWORD HERE !!! 
